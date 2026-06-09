@@ -21,35 +21,48 @@ public class RouterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        // 1. Extract the issue description submitted by the user from the JSP form
+        
+        String dept = request.getParameter("department");
         String issue = request.getParameter("issueText");
+        String targetURL = "";
 
-        // 2. Define the API endpoint of the independent Core Service (ITDepartmentServlet)
-        String targetURL = "http://localhost:8080/SmartCampusSupportSystem/ITDepartmentServlet";
-
-        // 3. Initialize an HTTP connection to act as a network bridge between services
-        URL url = new URL(targetURL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-
-        // 4. Send the payload across the network to the Core Service
-        try (OutputStream os = conn.getOutputStream()) {
-            String postData = "description=" + URLEncoder.encode(issue, "UTF-8");
-            byte[] input = postData.getBytes("UTF-8");
-            os.write(input, 0, input.length);
+        // SOA Routing Logic: Avoid one service doing everything
+        if ("IT".equals(dept)) {
+            targetURL = "http://localhost:8080/SmartCampusSupportSystem/ITDepartmentServlet";
+        } else if ("Facility".equals(dept)) {
+            targetURL = "http://localhost:8080/SmartCampusSupportSystem/FacilityDepartmentServlet";
         }
 
-        // 5. Evaluate the HTTP response code returned by the IT Service
-        int responseCode = conn.getResponseCode();
+        try {
+            // Forward request to the specific core service (Decomposition)
+            URL url = new URL(targetURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
 
-        if (responseCode == 200) {
-            // If the core service successfully processed the data, redirect to success page
-            response.sendRedirect("success.jsp");
-        } else {
-            // If the core service is down or failed (Fault Tolerance handling)
-            response.getWriter().println("System Error: Could not connect to the Core IT Service. Please try again later.");
+            String postData = "description=" + URLEncoder.encode(issue, "UTF-8");
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(postData.getBytes());
+                os.flush();
+            }
+
+            int responseCode = conn.getResponseCode();
+            response.setContentType("text/html");
+            
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                response.getWriter().println("<div style='text-align:center; margin-top:50px; font-family:sans-serif;'>");
+                response.getWriter().println("<h2 style='color:green;'>Success!</h2>");
+                response.getWriter().println("<p>Your report has been successfully routed to the <b>" + dept + " Department</b>.</p>");
+                response.getWriter().println("<p><i>(Please check NetBeans Output panel to see the mock email notification)</i></p>");
+                response.getWriter().println("<br><a href='index.jsp'>Back to Home</a>");
+                response.getWriter().println("</div>");
+            } else {
+                response.getWriter().println("<h3>System Error: Could not connect to the Core Service. Please try again later.</h3>");
+            }
+            conn.disconnect();
+
+        } catch (Exception e) {
+            response.getWriter().println("<h3>Gateway Error: " + e.getMessage() + "</h3>");
         }
     }
 }

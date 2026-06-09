@@ -1,6 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 package controller;
 
@@ -18,8 +18,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "ITDepartmentServlet", urlPatterns = {"/ITDepartmentServlet"})
-public class ITDepartmentServlet extends HttpServlet {
+@WebServlet(name = "FacilityDepartmentServlet", urlPatterns = {"/FacilityDepartmentServlet"})
+public class FacilityDepartmentServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -27,8 +27,8 @@ public class ITDepartmentServlet extends HttpServlet {
         
         String description = request.getParameter("description");
         
-        // STRICT DB ISOLATION: Connects ONLY to the IT database
-        String dbURL = "jdbc:mysql://localhost:3306/db_it_service";
+        // STRICT DB ISOLATION: Connects ONLY to the Facility database
+        String dbURL = "jdbc:mysql://localhost:3306/db_facility_service";
         String dbUser = "root";
         String dbPass = "";
 
@@ -36,15 +36,15 @@ public class ITDepartmentServlet extends HttpServlet {
             Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass)) {
                 
-                // 1. RESOLVE workflow: Save to IT Database
-                String sql = "INSERT INTO it_tickets (description, status) VALUES (?, 'Open')";
+                // 1. RESOLVE workflow: Save to Facility Database
+                String sql = "INSERT INTO facility_tickets (description, status) VALUES (?, 'Open')";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, description);
                     stmt.executeUpdate();
                 }
 
                 // 2. NOTIFY workflow: Call Notification Service via REST API
-                callNotificationService(description, "IT Department");
+                callNotificationService(description, "Facility Department");
                 
                 // 3. Return 200 OK back to the Router
                 response.setStatus(HttpServletResponse.SC_OK);
@@ -69,7 +69,7 @@ public class ITDepartmentServlet extends HttpServlet {
                 os.write(postData.getBytes());
                 os.flush();
             }
-            conn.getResponseCode(); 
+            conn.getResponseCode();
             conn.disconnect();
         } catch (Exception e) {
             System.out.println("[ERROR] Failed to call Notification Service: " + e.getMessage());
