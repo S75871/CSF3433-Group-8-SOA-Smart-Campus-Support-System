@@ -30,7 +30,7 @@ public class ITDepartmentServlet extends HttpServlet {
         // STRICT DB ISOLATION: Connects ONLY to the IT database
         String dbURL = "jdbc:mysql://localhost:3306/db_it_service";
         String dbUser = "root";
-        String dbPass = "";
+        String dbPass = "admin";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -57,8 +57,10 @@ public class ITDepartmentServlet extends HttpServlet {
 
     private void callNotificationService(String issue, String source) {
         try {
+            // THE API ENDPOINT URL (The "phone number" it's calling)
             URL url = new URL("http://localhost:8080/SmartCampusSupportSystem/NotificationServlet");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            // THE API METHOD (Using 'POST' which is a standard REST API method)
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
 

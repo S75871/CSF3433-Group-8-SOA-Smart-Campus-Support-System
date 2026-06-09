@@ -30,7 +30,7 @@ public class FacilityDepartmentServlet extends HttpServlet {
         // STRICT DB ISOLATION: Connects ONLY to the Facility database
         String dbURL = "jdbc:mysql://localhost:3306/db_facility_service";
         String dbUser = "root";
-        String dbPass = "";
+        String dbPass = "admin";
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

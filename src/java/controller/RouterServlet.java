@@ -40,12 +40,14 @@ public class RouterServlet extends HttpServlet {
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
 
+            // THE API PAYLOAD (The actual data being sent across the network)
             String postData = "description=" + URLEncoder.encode(issue, "UTF-8");
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(postData.getBytes());
                 os.flush();
             }
 
+            // THE API RESPONSE (Waiting to hear back if it was a success - '200 OK')
             int responseCode = conn.getResponseCode();
             response.setContentType("text/html");
             
